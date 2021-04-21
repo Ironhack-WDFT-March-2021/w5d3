@@ -65,3 +65,12 @@ app.use(
 
 // end of session configuration
 ```
+
+### You also need to update db/index.js
+
+```js
+// db/index.js
+// 
+
+module.exports = mongoose;
+```
