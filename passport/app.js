@@ -48,11 +48,15 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 
-
+// passport wants to store as little data as possible in the session so it only uses 
+// the id's (or someting else if we would want to implement that) and not the whole 
+// user object
+// this method is used by passport to put the id of the user into the session
 passport.serializeUser((user, done) => {
   done(null, user._id);
 })
 
+// this is used to retrieve the user by it's id (that is stored in the session)
 passport.deserializeUser((id, done) => {
   User.findById(id)
     .then(dbUser => {
@@ -94,6 +98,8 @@ app.use(passport.session());
 
 const GithubStrategy = require('passport-github').Strategy;
 passport.use(
+  // these are the credentials that we added / received when we registered the app
+  // on github
   new GithubStrategy(
     {
       clientID: process.env.GITHUB_ID,
@@ -102,12 +108,18 @@ passport.use(
     },
     (accessToken, refreshToken, profile, done) => {
       console.log(profile);
-      // find or create the user
+
+      // authentication on github passed we need to check if we have the user
+      // with that id now already in the database - if not we need to create it
       User.findOne({ githubId: profile.id })
         .then(userFromDB => {
           if (userFromDB !== null) {
+            // pass the user to passport so it can be serialized and it's id put into 
+            // the session
             done(null, userFromDB)
           } else {
+            // we can log the profile that we receive from the github api
+            // console.log(profile);
             User.create({ githubId: profile.id, username: profile.username, avatar: profile._json.avatar_url })
               .then(userFromDB => {
                 done(null, userFromDB);

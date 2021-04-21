@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 // github login
 router.get('/github', passport.authenticate('github'));
 
+// this is the route that we registered on github api when we created the app
 router.get('/auth/github/callback',
   passport.authenticate('github', {
     successRedirect: '/',
